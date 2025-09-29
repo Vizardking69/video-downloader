@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Downloader</title>
+    <style>
+        /* ===== Minimalistic Light Theme ===== */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9; /* 90% white */
+            color: #333; /* dark grey text */
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 80px auto;
+            padding: 30px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #222;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #333; /* dark grey button */
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0.6; /* disabled look initially */
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+        }
+
+        .agree {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .agree a {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        .flash {
+            background-color: #ffe0e0;
+            border: 1px solid #ffb3b3;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            color: #a00;
+        }
+
+        .disclaimer {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        /* ===== Red spinner loader ===== */
+        .loader {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #c62828; /* red */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Downloader</h1>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form id="downloadForm" method="POST">
+            <input type="url" name="url" placeholder="Paste video URL here" required>
+
+            <div class="disclaimer">
+                Only download videos for personal use. Do not upload copyrighted content.
+            </div>
+
+            <div class="agree">
+                <input type="checkbox" name="agree" id="agree">
+                <label for="agree">I accept the <a href="#">Terms & Conditions</a></label>
+            </div>
+
+            <button type="submit" id="downloadBtn" disabled>Download</button>
+        </form>
+
+        <!-- Loader spinner -->
+        <div class="loader" id="loader"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const checkbox = document.getElementById("agree");
+            const button = document.getElementById("downloadBtn");
+            const form = document.getElementById("downloadForm");
+            const loader = document.getElementById("loader");
+
+            // Enable/disable button
+            checkbox.addEventListener("change", function () {
+                button.disabled = !checkbox.checked;
+                button.style.opacity = checkbox.checked ? 1 : 0.6;
+            });
+
+            // Show loader on form submit
+            form.addEventListener("submit", function () {
+                loader.style.display = "block";
+            });
+        });
+    </script>
+</body>
+</html>
