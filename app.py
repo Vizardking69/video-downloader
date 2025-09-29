@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, flash
+from flask import Flask, render_template, request, send_file, redirect, url_for, flash, after_this_request
 import yt_dlp
 import os
 from pathlib import Path
@@ -28,11 +28,11 @@ def index():
 
         # yt-dlp options
         ydl_opts = {
-            'format': 'bestvideo+bestaudio/best',  # download best quality
+            'format': 'bestvideo+bestaudio/best',  # best quality
             'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
-            'noplaylist': True,                     # avoid playlists
-            'quiet': True,                          # minimal console output
-            'merge_output_format': 'mp4',           # merge video+audio into mp4
+            'noplaylist': True,
+            'quiet': True,
+            'merge_output_format': 'mp4',
         }
 
         try:
@@ -40,18 +40,27 @@ def index():
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=True)
                 filename = ydl.prepare_filename(info)
-            
+
             # Check if file exists and has size
             if not os.path.exists(filename) or os.path.getsize(filename) == 0:
                 flash("Download failed: The downloaded file is empty or not supported.")
                 return redirect(url_for("index"))
 
+            # Delete file after sending
+            @after_this_request
+            def remove_file(response):
+                try:
+                    os.remove(filename)
+                except Exception as e:
+                    print("Error deleting file:", e)
+                return response
+
             return send_file(filename, as_attachment=True)
-        
+
         except yt_dlp.utils.DownloadError as e:
             flash(f"Download failed: {str(e)}")
             return redirect(url_for("index"))
-        
+
         except Exception as e:
             flash(f"An unexpected error occurred: {str(e)}")
             return redirect(url_for("index"))
